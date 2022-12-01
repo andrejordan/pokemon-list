@@ -4,7 +4,7 @@ This is the base project for the iOS interview at Wonolo. It would be required t
 
 # Requirements 
 
-1. You need to have Xcode 12 or 13.
+1. You can use the last stable xcode version available
 2. Clone the repository.
 3. Open the `iOSBaseProject.xcodeproj` file.
 4. Build the project and run the project.
