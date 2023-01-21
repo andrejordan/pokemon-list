@@ -30,6 +30,7 @@ Provides a bindable interface for Views to hook into. Methods such as `getPokemo
 
 
 # Next Steps
-If I were to spend more time on this, I'd probably convert the UI to SwiftUI, and add unit tests using XCTest and verification based testing using a framework like [Quick](https://github.com/Quick/Quick). This lets us test that our ViewModel calls our PokemonSevice with the correct arguments, for example. Oh, and I would make the UI more enjoyable of course! 
+- If I were to spend more time on this, I'd probably convert the UI to SwiftUI. That way, we can drop the need for our `Bindable` class and just use the native [`@Published`](https://developer.apple.com/documentation/combine/published) and [`@Binding<T>`](https://developer.apple.com/documentation/swiftui/binding).
+- I'd also add unit tests using XCTest and verification based testing using a framework like [Quick](https://github.com/Quick/Quick). This lets us test that our ViewModel calls our PokemonSevice with the correct arguments, for example. Oh, and I would make the UI more enjoyable of course! 
 
 All in all this was a very fun exercise! 😁
