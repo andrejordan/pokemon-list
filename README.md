@@ -1,6 +1,6 @@
 # iOS Interview Project
 
-This is the base project for the iOS interview at Wonolo. 
+This is the base project for the iOS interview with improved architecture. 
 
 I completed the refactors discussed in the interview with Cesar! 😊
 
