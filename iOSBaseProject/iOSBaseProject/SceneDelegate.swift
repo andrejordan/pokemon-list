@@ -10,19 +10,21 @@ import UIKit
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 	var window: UIWindow?
-
+    var dependencies: IOCContainer
+    var navigation: Navigator
+    
+    override init() {
+        dependencies = DependencyContainer()
+        navigation = Navigation(dependencies: dependencies, initialScreen: .characterList)
+    }
 
 	func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
 		guard let windowScene = (scene as? UIWindowScene) else { return }
 		let window = UIWindow(windowScene: windowScene)
-		
-		let viewController = PokemonListViewController()
-		let navigation = UINavigationController(rootViewController: viewController)
-		window.rootViewController = navigation
-		
-		/// 5. Set the window and call makeKeyAndVisible()
+        window.rootViewController = navigation.navigationController
 		self.window = window
 		window.makeKeyAndVisible()
+        navigation.start()
 	}
 
 	func sceneDidDisconnect(_ scene: UIScene) {

@@ -1,16 +1,35 @@
 # iOS Interview Project
 
-This is the base project for the iOS interview at Wonolo. It would be required to clone and run this project before your interview.
+This is the base project for the iOS interview at Wonolo. 
 
-# Requirements 
+I completed the refactors discussed in the interview with Cesar! 😊
 
-1. You can use the last stable xcode version available
-2. Clone the repository.
-3. Open the `iOSBaseProject.xcodeproj` file.
-4. Build the project and run the project.
+# Architecture
+I chose to refactor the app into an MVVM-C based architecture using protocol oriented programming and Swift generics. This gives us a good level of testability and allow allows us to build simple Views that do not contain business logic.
 
-If everything goes well, you should see something like this. 
+## Root
+Required dependencies are created in the `init()` of `SceneDelegate` from where, we navigate to the initial `Screen.characterList`
 
-| <img src="https://user-images.githubusercontent.com/4720423/148575558-edb8077e-04d8-4353-a55f-b3f31c524448.png" alt="drawing" width="300"/> | <img src="https://user-images.githubusercontent.com/4720423/148575567-10d54199-219a-40bd-9c75-6dadccc1e5cf.png" alt="drawing" width="300"/> |
+## IOC Container
+Dependency Injection container that provides all necessary ViewModels and Services. For example, you can call `injector.getNetworkService()`
 
-We would be expanding the functionality of this starter app during the interview.
+## ViewModel
+Provides a bindable interface for Views to hook into. Methods such as `getPokemonList()` ensure that all business logic is abstracted away from the view to reduce coupling.
+
+## Bindings
+`Bindable` is an observable object that consumers can listen to via `addObserver()`. Also called `LiveData`. Views should set this up via `Bind()` function
+
+
+## Navigation
+- `enum Screen` contains the screens we want to display. For now it's just `characterList`
+- `Navigator` has a method `navigate(to screen: Screen)` which pushes the view onto a `UINavigationController`. It also has `showAlert()` for showing alerts to the user
+
+## Services and Networking
+- `PokemonService` responsible for fetching the list of Pokemon when needed
+- `NetworkService` has a generic method `fetch <Response: Codable>(endpoint: String, completion: @escaping (Response?, Error?) -> ()` this allows us to fetch from any API endpoint we'd like as long as we provide the expected response. Uses `URLSession`
+
+
+# Next Steps
+If I were to spend more time on this, I'd probably convert the UI to SwiftUI, and add unit tests using XCTest and verification based testing using a framework like [Quick](https://github.com/Quick/Quick). This lets us test that our ViewModel calls our PokemonSevice with the correct arguments, for example. Oh, and I would make the UI more enjoyable of course! 
+
+All in all this was a very fun exercise! 😁

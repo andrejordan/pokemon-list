@@ -8,26 +8,53 @@
 import UIKit
 
 class PokemonListViewController: UIViewController {
+    
+    private let viewModel: PokemonViewModel
 	private let tableView = UITableView()
-	private var pokemons = [Pokemon]()
 	private let loadingIndicator = UIActivityIndicatorView()
-	private var showActivityIndicator: Bool = true {
-		didSet {
-			if showActivityIndicator {
-				loadingIndicator.startAnimating()
-			} else {
-				loadingIndicator.stopAnimating()
-			}
-		}
-	}
+    
+    // MARK: Initializers
+    init(withViewModel viewModel: PokemonViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    // MARK: View Lifecycle Methods
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		self.navigationItem.title = "List of Pokemons"
+        bind()
+        viewModel.getPokemonList()
 		setupTableView()
 		setupLoadingIndicator()
-		loadCharacters()
 	}
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        unbind()
+    }
+    
+    // MARK: Bind to Observables
+    private func bind() {
+        viewModel.isLoading.addAndNotify(observer: self) { [weak self] isLoading in
+            guard let self = self else { return }
+            isLoading ? self.loadingIndicator.startAnimating() : self.loadingIndicator.stopAnimating()
+        }
+        viewModel.pokemonList.addAndNotify(observer: self) { [weak self] _ in
+            guard let self = self else { return }
+            self.tableView.reloadData()
+        }
+    }
+    
+    private func unbind() {
+        viewModel.isLoading.removeObserver(self)
+        viewModel.pokemonList.removeObserver(self)
+    }
 	
+    // MARK: Setup Subviews
 	private func setupLoadingIndicator() {
 		loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
 		loadingIndicator.hidesWhenStopped = true
@@ -53,59 +80,32 @@ class PokemonListViewController: UIViewController {
 		])
 		
 		tableView.dataSource = self
+        tableView.delegate = self
 		tableView.rowHeight = UITableView.automaticDimension
 		tableView.estimatedRowHeight = 44.0
 		
 		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
 	}
-	
-	private func showErrorAlert() {
-		let alert = UIAlertController(title: "Error", message: "Something went wrong", preferredStyle: .alert)
-		self.present(alert, animated: true, completion: nil)
-	}
-	
-	private func loadCharacters() {
-		let configuration = URLSessionConfiguration.default
-		let session = URLSession(configuration: configuration)
-		guard let url = URL(string: "https://pokeapi.co/api/v2/pokemon/?offset=0&limit=50") else { return }
-		
-		showActivityIndicator = true
-		
-		session.dataTask(with: url) { [weak self] data, response, error in
-			DispatchQueue.main.async {
-				self?.showActivityIndicator.toggle()
-				
-				if let _ = error {
-					self?.showErrorAlert()
-				}
-							
-				if let data = data {
-					do {
-						let decoder = JSONDecoder()
-						let pokemonResponse = try decoder.decode(PokemonServiceResponse.self, from: data)
-						self?.pokemons = pokemonResponse.results
-						self?.tableView.reloadData()
-					} catch {
-						self?.showErrorAlert()
-					}
-				}
-			}
-		}.resume()
-	}
 }
 
-extension PokemonListViewController: UITableViewDataSource {
+// MARK: UITableView Datasource & Delegate
+extension PokemonListViewController: UITableViewDataSource, UITableViewDelegate {
 	func numberOfSections(in tableView: UITableView) -> Int {
 		return 1
 	}
 	
 	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		return pokemons.count
+        return viewModel.pokemonList.value.count
 	}
 	
 	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-		cell.textLabel?.text = pokemons[indexPath.row].name.capitalized
+        cell.textLabel?.text = viewModel.pokemonList.value[indexPath.row].name.capitalized
 		return cell
 	}
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        self.viewModel.paginateIfNeeded(indexPath.row)
+    }
+    
 }
