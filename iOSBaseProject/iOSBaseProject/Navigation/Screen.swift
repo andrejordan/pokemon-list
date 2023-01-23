@@ -15,7 +15,7 @@ enum Screen {
     func viewController(_ navigation: Navigator, dependencies: IOCContainer) -> UIViewController {
         switch self {
         case .characterList:
-            return PokemonListViewController(withViewModel: dependencies.injectPokemonViewModel(withNavigation: navigation))
+            return PokemonListViewController(withViewModel: dependencies.resolve(withNavigation: navigation))
         }
     }
 }
